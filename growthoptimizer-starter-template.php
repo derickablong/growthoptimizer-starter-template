@@ -856,7 +856,7 @@ class Growth_Optimizer_Template_Kit extends Source_Local {
 
             $success = true;
             $file    = $plugin['file'];
-            $source  = $plugin['url'];
+            $source  = stripslashes($plugin['url']);
             $name    = $plugin['name'];
                     
         
@@ -869,32 +869,50 @@ class Growth_Optimizer_Template_Kit extends Source_Local {
                 fopen($source, 'r')
             );
 
-            # Unzip downloaded file
-            $unzip_file = unzip_file(
-                $file_target,
-                $destination_path
-            );
 
-            # Remove downloaded file
-            unlink($file_target);
+            # Create a new ZipArchive instance
+            $zip = new \ZipArchive();
 
-            if ($unzip_file) {
-                $this->activate_plugin($file, $plugin['license_key']);
-                $message[] = "Plugin {$name} installed.";
+            # Open the zip file
+            if ($zip->open($file_target) === TRUE) {
+                # Extract the contents to the specified folder
+                if ($zip->extractTo($destination_path.'/'.$this->selected_plugin)) {
+                    # Activate plugin
+                    $this->activate_plugin($file, $plugin['license_key']);
+
+                    # Success message
+                    $message[] = "Plugin {$name} installed.";
+
+                    # Plugin this plugin as installed
+                    update_option(
+                        $this->plugin_installed_option_key,
+                        'installed',
+                        true
+                    );
+                } else {
+                    # Failed message
+                    $message[] = "Plugin {$name} failed to install.";
+
+                    # Plug as failed
+                    $success = false;
+                }
+
+                # Close the zip file
+                $zip->close();
+
             } else {
+
+                # Failed message
                 $message[] = "Plugin {$name} failed to install.";
+
+                # Plug as failed
                 $success = false;
             }
             
 
-            if ($success) {
-                # Plugin this plugin as installed
-                update_option(
-                    $this->plugin_installed_option_key,
-                    'installed',
-                    true
-                );
-            }
+            # Remove downloaded file
+            unlink($file_target);           
+            
         } else {
             $message = 'The requested plugin to install was not found in the cloud server.';
         }
@@ -902,7 +920,8 @@ class Growth_Optimizer_Template_Kit extends Source_Local {
         wp_send_json([
             'message' => $message,
             'success' => $success,
-            'plugin'  => $plugin
+            'plugin'  => $plugin,
+            'target'  => $file_target
         ]);
         wp_die();
     }
