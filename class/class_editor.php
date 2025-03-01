@@ -14,7 +14,7 @@ class GO_Editor extends Go_Helper
         $this->parent = $parent;
 
         # Helper
-        $this->instance($this->parent);
+        $this->helper($this->parent);
 
         # Register actions
         # Register elementor footer scripts

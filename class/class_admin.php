@@ -16,7 +16,7 @@ class GO_Admin extends Go_Helper
         $this->parent = $parent; 
         
         # Helper
-        $this->instance($this->parent);
+        $this->helper($this->parent);
         
         # Add admin menu
         add_action( 

@@ -13,7 +13,7 @@ class Go_Helper
      * @param object $parent
      * @return void
      */
-    public function instance($parent)
+    public function helper($parent)
     {
         $this->parent = $parent;
     }
