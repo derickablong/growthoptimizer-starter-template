@@ -94,15 +94,6 @@ class Growth_Optimizer_Template_Kit extends GO_Elementor
     }
 
     /**
-     * Let's start the starter kit system
-     * @return void
-     */
-    public function start()
-    {
-        $this->actions();
-    }
-
-    /**
      * Start initializing hooks
      * to start the template kit
      * @return void
@@ -872,7 +863,7 @@ add_action('plugins_loaded', function() {
         GROWTH_OPTIMIZER_PLUGIN_INSTALLED_KEY
     );
     # Start the system
-    $go_starter_template_kit->start();
+    $go_starter_template_kit->actions();
 
     # Start admin
     new GO_Admin($go_starter_template_kit);

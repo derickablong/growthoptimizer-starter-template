@@ -7,7 +7,7 @@ use Elementor\Plugin;
 abstract class GO_Elementor extends Source_Local
 {
     # Required method to call
-    abstract public function start();
+    abstract public function actions();
 
     /**
      * Translate elementor data into valid elementor data
