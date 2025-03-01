@@ -3,7 +3,7 @@
 namespace Elementor\TemplateLibrary;
 
 # Admin class
-class GO_Admin
+class GO_Admin extends Go_Helper
 {
     public $parent;
 
@@ -13,7 +13,10 @@ class GO_Admin
     function __construct($parent)
     {   
         # Access parent data
-        $this->parent = $parent;        
+        $this->parent = $parent; 
+        
+        # Helper
+        $this->instance($this->parent);
         
         # Add admin menu
         add_action( 
@@ -146,7 +149,13 @@ class GO_Admin
      */
     public function admin_part_api( $api_token, $is_active )
     {
-        include $this->parent->plugin_directory . '/parts/admin_part-api.php';
+        $this->template(
+            'admin_part-api',
+            [
+                'api_token' => $api_token,
+                'is_active' => $is_active
+            ]
+        );        
     }
 
 
@@ -158,7 +167,12 @@ class GO_Admin
     public function admin_part_global_settings()
     {        
         $is_installed = get_option($this->parent->global_settings_option_key, '') == 'installed';
-        include $this->parent->plugin_directory . '/parts/admin_part-global-settings.php';
+        $this->template(
+            'admin_part-global-settings',
+            [
+                'is_installed' => $is_installed
+            ]
+        );         
     }
 
 
@@ -179,7 +193,13 @@ class GO_Admin
         }        
         $installed_plugins = get_plugins();
 
-        include $this->parent->plugin_directory . '/parts/admin_part-plugins.php';
+        $this->template(
+            'admin_part-plugins',
+            [
+                'plugins'           => $plugins,
+                'installed_plugins' => $installed_plugins
+            ]
+        );        
     }
 
 
@@ -202,7 +222,15 @@ class GO_Admin
                 $imported[$item['ID']] = $found_post_id;
             }                              
         }
-        include $this->parent->plugin_directory . '/parts/admin_part-loop-items.php';
+
+        $this->template(
+            'admin_part-loop-items',
+            [
+                'imported'   => $imported,
+                'loop_items' => $loop_items
+            ]
+        );
+        
     }
 
 
@@ -223,7 +251,15 @@ class GO_Admin
                 $imported[] = $item['ID'];
             }                              
         }
-        include $this->parent->plugin_directory . '/parts/admin_part-acf.php';
+
+        $this->template(
+            'admin_part-acf',
+            [
+                'imported'  => $imported,
+                'acf_items' => $acf_items
+            ]
+        );
+        
     }
 
 
@@ -233,7 +269,7 @@ class GO_Admin
      */
     public function lottie()
     {
-        include $this->parent->plugin_directory . '/parts/admin_part_lottie.php';
+        $this->template('admin_part_lottie');        
     }
 
 
@@ -254,7 +290,15 @@ class GO_Admin
                 $imported[] = $item['form_id'];
             }                              
         }        
-        include $this->parent->plugin_directory . '/parts/admin_part-gforms.php';
+
+        $this->template(
+            'admin_part-gforms',
+            [
+                'imported'    => $imported,
+                'gform_items' => $gform_items
+            ]
+        );
+        
     }
 
 
@@ -268,7 +312,16 @@ class GO_Admin
         $tab = str_replace($this->parent->slug.'-', '', $_GET['page']);        
         $is_active = $this->parent->is_active();  
         $api_key_token = $this->parent->get_api_token();
-        include $this->parent->plugin_directory . '/parts/admin.php';
+
+        $this->template(
+            'admin',
+            [
+                'tab'           => $tab,
+                'is_active'     => $is_active,
+                'api_key_token' => $api_key_token
+            ]
+        );
+        
     }
 
 

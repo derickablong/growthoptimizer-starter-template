@@ -36,6 +36,8 @@ define('GROWTH_OPTIMIZER_PLUGIN_INSTALLED_KEY', 'go_plugin_installed');
 
 # Load elementor
 require_once(GROWTH_OPTIMIZER_DIR . 'class/class_elementor.php');
+# Helper class
+require_once(GROWTH_OPTIMIZER_DIR . 'class/class_helper.php');
 # Admin class
 require_once(GROWTH_OPTIMIZER_DIR . 'class/class_admin.php');
 # Editor class

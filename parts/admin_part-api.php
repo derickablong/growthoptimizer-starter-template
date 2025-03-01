@@ -10,7 +10,7 @@
 
         <div>
             <?php if ($is_active): ?>
-                <span class="active-api-key-value"><?php echo $api_token.$api_token ?></span>
+                <span class="active-api-key-value"><?php echo $api_token ?></span>
             <?php else: ?>
                 <input type="text" id="api-token-input" value="" placeholder="Enter API access token" style="width:100%">
             <?php endif; ?>
