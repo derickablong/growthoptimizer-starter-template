@@ -2,7 +2,7 @@
 
 namespace Elementor\TemplateLibrary;
 
-class GO_Editor
+class GO_Editor extends Go_Helper
 {
 
     # Parent variable holder
@@ -12,6 +12,9 @@ class GO_Editor
     {
         # Assign parent variable
         $this->parent = $parent;
+
+        # Helper
+        $this->instance($this->parent);
 
         # Register actions
         # Register elementor footer scripts
@@ -89,7 +92,16 @@ class GO_Editor
         }
 
         $template_terms = implode(' ', $terms_slugs);
-        include $this->parent->plugin_directory . '/parts/editor_popup_template-item.php';
+
+        $this->template(
+            'editor_popup_template-item',
+            [
+                'template_terms' => $template_terms,
+                'template'       => $template,
+                'index'          => $index
+            ]
+        );
+        
     }
 
 
@@ -136,7 +148,12 @@ class GO_Editor
      */
     public function popup_filter_item( $categories )
     {
-        include $this->parent->plugin_directory . '/parts/editor_popup_filter.php';
+        $this->template(
+            'editor_popup_filter',
+            [
+                'categories' => $categories
+            ]
+        );        
     }
 
 
@@ -147,7 +164,7 @@ class GO_Editor
      */
     public function popup()
     {
-        include $this->parent->plugin_directory . '/parts/editor_popup.php';
+        $this->template('editor_popup');        
     }
 
 
