@@ -858,25 +858,28 @@ class Growth_Optimizer_Template_Kit extends GO_Elementor
 
 }
 
-# Start the template kit
-$go_starter_template_kit = new Growth_Optimizer_Template_Kit(
-    GROWTH_OPTIMIZER_TITLE,
-    GROWTH_OPTIMIZER_SLUG,
-    GROWTH_OPTIMIZER_CLOUD_API,
-    GROWTH_OPTIMIZER_URL,
-    GROWTH_OPTIMIZER_DIR,
-    GROWTH_OPTIMIZER_API_TOKEN_OPTION_KEY,
-    GROWTH_OPTIMIZER_GLOBAL_SETTINGS_OPTION_KEY,
-    GROWTH_OPTIMIZER_PLUGIN_INSTALLED_KEY
-);
-# Start the system
-$go_starter_template_kit->start();
+# When plugin loaded, start the starter kit
+add_action('plugins_loaded', function() {
+    # Start the template kit
+    $go_starter_template_kit = new Growth_Optimizer_Template_Kit(
+        GROWTH_OPTIMIZER_TITLE,
+        GROWTH_OPTIMIZER_SLUG,
+        GROWTH_OPTIMIZER_CLOUD_API,
+        GROWTH_OPTIMIZER_URL,
+        GROWTH_OPTIMIZER_DIR,
+        GROWTH_OPTIMIZER_API_TOKEN_OPTION_KEY,
+        GROWTH_OPTIMIZER_GLOBAL_SETTINGS_OPTION_KEY,
+        GROWTH_OPTIMIZER_PLUGIN_INSTALLED_KEY
+    );
+    # Start the system
+    $go_starter_template_kit->start();
 
-# Start admin
-new GO_Admin($go_starter_template_kit);
+    # Start admin
+    new GO_Admin($go_starter_template_kit);
 
-# Start elementor editor
-new GO_Editor($go_starter_template_kit);
+    # Start elementor editor
+    new GO_Editor($go_starter_template_kit);
+});
 
 # Import global settings on activate plugin
 add_action( 'activated_plugin', function($plugin) {
