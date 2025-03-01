@@ -33,4 +33,28 @@ class Go_Helper
         include $this->parent->plugin_directory . "/parts/{$file}.php";
     }
 
+    
+    /**
+     * CSS file url
+     * 
+     * @param string $file
+     * @return string
+     */
+    public function css($file)
+    {
+        return $this->parent->plugin_url . "assets/css/{$file}.css";        
+    }
+
+
+    /**
+     * JS file url
+     * 
+     * @param string $file
+     * @return string
+     */
+    public function script($file)
+    {
+        return $this->parent->plugin_url . "assets/js/{$file}.js";        
+    }
+
 }

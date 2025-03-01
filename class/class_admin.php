@@ -121,7 +121,7 @@ class GO_Admin extends Go_Helper
 
         wp_enqueue_style( 
             'growth-optimizer-admin-css', 
-            $this->parent->plugin_url . 'assets/css/admin.css', 
+            $this->css('admin'), 
             array(), 
             uniqid(), 
             'all' 
@@ -129,7 +129,7 @@ class GO_Admin extends Go_Helper
 
         wp_register_script( 
             'growth-optimizer-admin-script', 
-            $this->parent->plugin_url . 'assets/js/admin.js', 
+            $this->script('admin'), 
             array( 'jquery' ), 
             uniqid(), 
             true

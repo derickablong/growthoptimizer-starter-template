@@ -149,14 +149,6 @@ class Growth_Optimizer_Template_Kit extends GO_Elementor
         add_action(
             'wp_ajax_growth_optimizer_import_gform_items',
             [$this, 'import_gform_items']
-        );
-
-        # Unauthorize
-        add_action(
-            'kit-unauthorize',
-            [$this, 'unauthorize'],
-            10,
-            1
         );        
         
     }
@@ -791,18 +783,6 @@ class Growth_Optimizer_Template_Kit extends GO_Elementor
         return false;
     }
 
-
-    /**
-     * Unauthorize message to display 
-     * if site is not subscribe to the 
-     * cloud server
-     * @return void
-     */
-    public function unauthorize( $domain )
-    {
-        $admin_page = admin_url(GROWTH_OPTIMIZER_ADMIN_PAGE);
-        include $this->plugin_directory . '/parts/editor_unauthorize.php';
-    }
 
     /**
      * Check if this site subscribe to the

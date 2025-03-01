@@ -60,6 +60,14 @@ class GO_Editor extends Go_Helper
             4
         );
 
+        # Unauthorize
+        add_action(
+            'kit-unauthorize',
+            [$this, 'unauthorize'],
+            10,
+            1
+        );
+
     }
 
 
@@ -169,6 +177,25 @@ class GO_Editor extends Go_Helper
 
 
     /**
+     * Unauthorize message to display 
+     * if site is not subscribe to the 
+     * cloud server
+     * @return void
+     */
+    public function unauthorize( $domain )
+    {
+        $admin_page = admin_url(GROWTH_OPTIMIZER_ADMIN_PAGE);
+        $this->template(
+            'editor_unauthorize',
+            [
+                'domain'     => $domain,
+                'admin_page' => $admin_page
+            ]
+        );        
+    }
+
+
+    /**
      * Load template kit libraries inside
      * elementor editor footer
      * @return void
@@ -177,7 +204,7 @@ class GO_Editor extends Go_Helper
     {
         wp_enqueue_style( 
             'growth-optimizer-template-kit-css', 
-            $this->parent->plugin_url . 'assets/css/editor.css', 
+            $this->css('editor'), 
             array(), 
             uniqid(), 
             'all' 
@@ -185,7 +212,7 @@ class GO_Editor extends Go_Helper
 
         wp_enqueue_script( 
             'growth-optimizer-template-kit-script', 
-            $this->parent->plugin_url . 'assets/js/editor-script.js', 
+            $this->script('editor-script'), 
             array( 'jquery', 'masonry', 'imagesloaded' ), 
             uniqid(), 
             true
