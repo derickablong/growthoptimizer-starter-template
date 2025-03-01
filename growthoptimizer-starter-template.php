@@ -11,20 +11,19 @@
  *
  * @package         growthoptimizer-starter-template
  */
-
 namespace Elementor\TemplateLibrary;
 
+# Avoid direct access to this file
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-// If plugin - 'Elementor' not exist then return.
+# Making sure the elementor plugin is installed first
 if ( ! class_exists( '\Elementor\Plugin' ) ) {
 	return;
 }
 
-use Elementor\Plugin;
-
+# Constant variables
 define('GROWTH_OPTIMIZER_TITLE', 'GO Starter Kit');
 define('GROWTH_OPTIMIZER_SLUG', 'go-starter-kit');
 define('GROWTH_OPTIMIZER_CLOUD_API', 'https://templates.1dea.ca/wp-json/%s/v2');
@@ -35,40 +34,52 @@ define('GROWTH_OPTIMIZER_API_TOKEN_OPTION_KEY', 'go_api_token');
 define('GROWTH_OPTIMIZER_GLOBAL_SETTINGS_OPTION_KEY', 'go_global_settings');
 define('GROWTH_OPTIMIZER_PLUGIN_INSTALLED_KEY', 'go_plugin_installed');
 
+# Load elementor
+require_once(GROWTH_OPTIMIZER_DIR . 'class/class_elementor.php');
+# Admin class
+require_once(GROWTH_OPTIMIZER_DIR . 'class/class_admin.php');
+# Editor class
+require_once(GROWTH_OPTIMIZER_DIR . 'class/class_editor.php');
 
-
-class Growth_Optimizer_Template_Kit extends Source_Local {
-
-
+class Growth_Optimizer_Template_Kit extends GO_Elementor
+{
     # Plugin title
-    protected $plugin_title;
+    public $plugin_title;
 
     # Api URL
-    protected $cloud_api;
+    public $cloud_api;
 
     # Plugin URL
-    protected $plugin_url;
+    public $plugin_url;
 
     # Plugin directory
-    protected $plugin_directory;
+    public $plugin_directory;
 
     # API Token option key
-    protected $api_token_option_key;
+    public $api_token_option_key;
 
     # Global settings option key
-    protected $global_settings_option_key;
+    public $global_settings_option_key;
 
     # Plugin installed option key
-    protected $plugin_installed_option_key;
+    public $plugin_installed_option_key;
 
     # Selected plugin
-    protected $selected_plugin;
+    public $selected_plugin;
 
     # Slug
-    protected $slug;
+    public $slug;
 
     /**
-     * Initialize
+     * Prepare needed system variables
+     * @param string $title
+     * @param string $slug
+     * @param string $_cloud_api
+     * @param string $_plugin_url
+     * @param string $_plugin_dir
+     * @param string $api_token
+     * @param string $global_settings
+     * @param string $plugin_intalled
      */
     function __construct( $title, $slug, $_cloud_api, $_plugin_url, $_plugin_dir, $api_token, $global_settings, $plugin_intalled )
     {
@@ -80,8 +91,15 @@ class Growth_Optimizer_Template_Kit extends Source_Local {
         $this->api_token_option_key        = $api_token;
         $this->global_settings_option_key  = $global_settings;
         $this->plugin_installed_option_key = $plugin_intalled;
+    }
 
-        $this->init();
+    /**
+     * Let's start the starter kit system
+     * @return void
+     */
+    public function start()
+    {
+        $this->actions();
     }
 
     /**
@@ -89,50 +107,8 @@ class Growth_Optimizer_Template_Kit extends Source_Local {
      * to start the template kit
      * @return void
      */
-    private function init()
-    {
-        # Register elementor footer scripts
-        add_action(
-            'elementor/editor/footer',
-            [$this, 'elementor_footer'],
-            99
-        );
-
-        # Action for templates
-        add_action(
-            'kit-templates',
-            [$this, 'load_templates'],
-            10,
-            3
-        );
-
-        # Popup filters
-        add_action(
-            'kit-filters',
-            [$this, 'popup_filters']
-        );
-
-        # Filter categories
-        add_action(
-            'kit-filter-item',
-            [$this, 'popup_filter_item'],
-            10,
-            1
-        );
-
-        # Popup
-        add_action(
-            'growth_optimizer-template-popup',
-            [$this, 'popup']
-        );
-
-        # Popup template item
-        add_action(
-            'growth_optimizer-template-item',
-            [$this, 'popup_template_item'],
-            10,
-            4
-        );
+    public function actions()
+    {       
 
         # Ajax request to import selected template
         add_action(
@@ -188,102 +164,10 @@ class Growth_Optimizer_Template_Kit extends Source_Local {
             [$this, 'unauthorize'],
             10,
             1
-        );
-
-        # Add admin menu
-        add_action( 
-            'admin_menu', 
-            [$this, 'admin_menu'], 
-            99 
-        );
-
-        # Admin scripts
-        add_action(
-            'admin_enqueue_scripts',
-            [$this, 'admin_scripts']
-        );
-
-
-        # Admin parts
-        add_action('admin-part-api', [$this, 'admin_part_api'], 10, 2);
-        add_action('admin-part-global-settings', [$this, 'admin_part_global_settings']);
-        add_action('admin-part-plugins', [$this, 'admin_part_plugins']);
-        add_action('admin-part-loop-items', [$this, 'admin_part_loop_items']);
-        add_action('admin-part-acf', [$this, 'admin_part_acf']);
-        add_action('admin-part-gforms', [$this, 'admin_part_gforms']);
-        add_action('go-lottie', [$this, 'lottie']);
-
-        # Add custom CSS in admin page
-        add_action('admin_head', [$this, 'admin_head_css']);
+        );        
         
     }
 
-
-    /**
-     * Admin menu
-     * @return void
-     */
-    public function admin_menu()
-    {
-        # Add custom admin management
-        add_menu_page(
-            __( $this->plugin_title, 'go-kit' ),
-            __( $this->plugin_title, 'go-kit' ),
-            'manage_options',
-            $this->slug,
-            [$this, 'admin_page'],
-            $this->plugin_url . 'assets/img/logo-icon-white.svg',
-            4
-        );        
-        add_submenu_page(
-            $this->slug,
-            __( 'API', 'go-kit' ),
-            __( 'API', 'go-kit' ),
-            'manage_options',
-            $this->slug.'-api',
-            [$this, 'admin_page']
-        );
-        add_submenu_page(
-            $this->slug,
-            __( 'Global Settings', 'go-kit' ),
-            __( 'Global Settings', 'go-kit' ),
-            'manage_options',
-            $this->slug.'-global-settings',
-            [$this, 'admin_page']
-        );
-        add_submenu_page(
-            $this->slug,
-            __( 'Plugins', 'go-kit' ),
-            __( 'Plugins', 'go-kit' ),
-            'manage_options',
-            $this->slug.'-plugins',
-            [$this, 'admin_page']
-        );
-        add_submenu_page(
-            $this->slug,
-            __( 'Loop Items', 'go-kit' ),
-            __( 'Loop Items', 'go-kit' ),
-            'manage_options',
-            $this->slug.'-loop-items',
-            [$this, 'admin_page']
-        );
-        add_submenu_page(
-            $this->slug,
-            __( 'Gravity Forms', 'go-kit' ),
-            __( 'Gravity Forms', 'go-kit' ),
-            'manage_options',
-            $this->slug.'-gforms',
-            [$this, 'admin_page']
-        );
-        add_submenu_page(
-            $this->slug,
-            __( 'ACF', 'go-kit' ),
-            __( 'ACF', 'go-kit' ),
-            'manage_options',
-            $this->slug.'-acf',
-            [$this, 'admin_page']
-        );
-    }
 
 
     /**
@@ -291,7 +175,7 @@ class Growth_Optimizer_Template_Kit extends Source_Local {
      * from cloud server
      * @return void
      */
-    private function import_custom_fonts()
+    public function import_custom_fonts()
     {
         $custom_fonts = $this->cloud_server('custom-fonts');
         if ($custom_fonts && !$this->is_not_authorize( $custom_fonts )) {
@@ -364,7 +248,7 @@ class Growth_Optimizer_Template_Kit extends Source_Local {
      * Get site domain
      * @return mixed|string
      */
-    private function get_domain()
+    public function get_domain()
     {
         $domain = parse_url(home_url());
         return $domain['host'];
@@ -449,7 +333,7 @@ class Growth_Optimizer_Template_Kit extends Source_Local {
 	 * @param  array   $data Elementor Data.
 	 * @return array   $data Elementor Imported Data.
 	 */
-    private function import($post_id = 0, $data = array())
+    public function import($post_id = 0, $data = array())
     {
         if ( ! empty( $post_id ) && ! empty( $data ) ) {
 			return $this->translate_elementor_data($data);
@@ -482,43 +366,11 @@ class Growth_Optimizer_Template_Kit extends Source_Local {
         wp_die();
     }
 
-    /**
-     * Load template items
-     * @param integer $index
-     * @param string $template
-     * @param integer $selected_category
-     * @param string $search_keyword
-     * @return void
-     */
-    public function popup_template_item( $index, $template, $selected_category = 0, $search_keyword = '' )
-    {
-        $terms_slugs    = [];
-        $template_terms = !empty($template['categories']) ? $template['categories'] : [];
-        $terms          = [];
-
-        foreach($template_terms as $term) {
-            $terms_slugs[] = 'template-item-'.$term['term_id'];
-            $terms[]       = (int)$term['term_id'];
-        } 
-        
-        # Search keyword
-        if ($search_keyword && !str_contains( strtolower($template['title']), strtolower($search_keyword) )) {
-            return;
-        }
-        # Category
-        else if (empty($search_keyword) && $selected_category > 0 && !in_array($selected_category, $terms)) {
-            return;
-        }
-
-        $template_terms = implode(' ', $terms_slugs);
-        include $this->plugin_directory . '/includes/popup_template-item.php';
-    }
-
 
     /**
      * Get site api key token
      */
-    private function get_api_token()
+    public function get_api_token()
     {
         return get_option( $this->api_token_option_key, '' );
     }
@@ -529,7 +381,7 @@ class Growth_Optimizer_Template_Kit extends Source_Local {
      * @param string $action
      * @param array $authorization
      */
-    private function cloud_server( $action, $authorization = [] )
+    public function cloud_server( $action, $authorization = [] )
     {
         $request = wp_remote_get(
             sprintf($this->cloud_api, $action),
@@ -548,7 +400,7 @@ class Growth_Optimizer_Template_Kit extends Source_Local {
      * Check if site api token is 
      * still active or authorize
      */
-    private function is_active()
+    public function is_active()
     {
         return $this->cloud_server('is-active');
     }
@@ -557,7 +409,7 @@ class Growth_Optimizer_Template_Kit extends Source_Local {
     /**
      * Get requried plugins
      */
-    private function get_required_plugins()
+    public function get_required_plugins()
     {
         return $this->cloud_server('required-plugins');
     }
@@ -569,7 +421,7 @@ class Growth_Optimizer_Template_Kit extends Source_Local {
      * @param string $license_key
      * @return null
      */
-    private function activate_plugin( $plugin, $license_key )
+    public function activate_plugin( $plugin, $license_key )
     {
         $plugin  = trim( $plugin );
         $current = get_option( 'active_plugins' );
@@ -591,28 +443,6 @@ class Growth_Optimizer_Template_Kit extends Source_Local {
         }
 
         return null;        
-    }
-
-
-    /**
-     * Translate elementor data into valid elementor data
-     * to avoid issues
-     * @param mixed $elementor_data
-     * @return void
-     */
-    private function translate_elementor_data( $elementor_data )
-    {
-        $data = json_decode( $elementor_data, true );
-            
-        Plugin::$instance->uploads_manager->set_elementor_upload_state( true );
-        // Import the data.
-        $data = $this->process_export_import_content( $data, 'on_import' );			
-
-        Plugin::$instance->uploads_manager->set_elementor_upload_state( false );
-        // !important, Clear the cache after images import.
-        Plugin::$instance->posts_css_manager->clear_cache();
-
-        return $data;
     }
 
 
@@ -674,7 +504,7 @@ class Growth_Optimizer_Template_Kit extends Source_Local {
      * @param string | array $license_key
      * @return void
      */
-    private function apply_activation_keys($plugin, $license_key)
+    public function apply_activation_keys($plugin, $license_key)
     {
         if (empty($license_key)) return;
 
@@ -690,7 +520,7 @@ class Growth_Optimizer_Template_Kit extends Source_Local {
             if (!defined('BSF_UPDATER_PATH')) {
                 define('BSF_UPDATER_PATH', WP_PLUGIN_DIR  . '/ultimate-elementor/admin/bsf-core');
             }
-            require_once(BSF_UPDATER_PATH  . '/includes/helpers.php');
+            require_once(BSF_UPDATER_PATH  . '/parts/helpers.php');
             require_once(BSF_UPDATER_PATH  . '/class-bsf-license-manager.php');            
             $ultimate_addons = new \BSF_License_Manager();
             $ultimate_addons->bsf_process_license_activation(
@@ -928,56 +758,11 @@ class Growth_Optimizer_Template_Kit extends Source_Local {
 
 
     /**
-     * Admin part api field
-     * @param mixed $api_token
-     * @param boolean $is_active
-     * @return void
-     */
-    public function admin_part_api( $api_token, $is_active )
-    {
-        include $this->plugin_directory . '/admin/part-api.php';
-    }
-
-
-    /**
-     * Admin part global settings
-     * 
-     * @return void
-     */
-    public function admin_part_global_settings()
-    {        
-        $is_installed = get_option($this->global_settings_option_key, '') == 'installed';
-        include $this->plugin_directory . '/admin/part-global-settings.php';
-    }
-
-
-    /**
-     * Admin part plugins
-     * 
-     * @return void
-     */
-    public function admin_part_plugins()
-    {   
-        
-        $plugins = $this->cloud_server('required-plugins');
-
-        if ($this->is_not_authorize( $plugins )) return;
-
-        if ( ! function_exists( 'get_plugins' ) ) {
-            require_once ABSPATH . 'wp-admin/includes/plugin.php';
-        }        
-        $installed_plugins = get_plugins();
-
-        include $this->plugin_directory . '/admin/part-plugins.php';
-    }
-
-
-    /**
      * Check post slug exists
      * @param string $slug
      * @return bool
      */
-    private function is_slug_exists($slug)
+    public function is_slug_exists($slug)
     {
         global $wpdb;
         $find_post = $wpdb->get_row(
@@ -998,7 +783,7 @@ class Growth_Optimizer_Template_Kit extends Source_Local {
      * @param string $form
      * @return bool
      */
-    private function is_form_exists($form)
+    public function is_form_exists($form)
     {
         global $wpdb;
         $find_form = $wpdb->get_row(
@@ -1015,114 +800,6 @@ class Growth_Optimizer_Template_Kit extends Source_Local {
 
 
     /**
-     * Admin part loop items
-     * 
-     * @return void
-     */
-    public function admin_part_loop_items()
-    {
-        $imported   = [];
-        $loop_items = $this->cloud_server('loop-items');
-
-        if ($this->is_not_authorize( $loop_items )) return;
-
-        # Check loop items if installed
-        foreach ($loop_items as $item) {            
-            $found_post_id = $this->is_slug_exists( $item['slug'] );
-            if ($found_post_id) {
-                $imported[$item['ID']] = $found_post_id;
-            }                              
-        }
-        include $this->plugin_directory . '/admin/part-loop-items.php';
-    }
-
-
-    /**
-     * Part ACF
-     * @return void
-     */
-    public function admin_part_acf()
-    {
-        $imported  = [];
-        $acf_items = $this->cloud_server('acf');
-
-        if ($this->is_not_authorize( $acf_items )) return;
-
-        # Check loop items if installed
-        foreach ($acf_items as $item) {            
-            if ($this->is_slug_exists( $item['post_name'] )) {
-                $imported[] = $item['ID'];
-            }                              
-        }
-        include $this->plugin_directory . '/admin/part-acf.php';
-    }
-
-
-    /**
-     * Lottie
-     * @return void
-     */
-    public function lottie()
-    {
-        include $this->plugin_directory . '/admin/lottie.php';
-    }
-
-
-    /**
-     * Part Gravity Forms
-     * @return void
-     */
-    public function admin_part_gforms()
-    {
-        $imported  = [];
-        $gform_items = $this->cloud_server('gforms');
-
-        if ($this->is_not_authorize( $gform_items )) return;
-
-        # Check loop items if installed
-        foreach ($gform_items as $item) {            
-            if ($this->is_form_exists( $item['title'] )) {
-                $imported[] = $item['form_id'];
-            }                              
-        }        
-        include $this->plugin_directory . '/admin/part-gforms.php';
-    }
-
-
-    /**
-     * Admin page
-     * @return void
-     */
-    public function admin_page()
-    {
-        wp_enqueue_script( 'growth-optimizer-admin-script' );
-        $tab = str_replace($this->slug.'-', '', $_GET['page']);        
-        $is_active = $this->is_active();  
-        $api_key_token = $this->get_api_token();
-        include $this->plugin_directory . '/admin/admin.php';
-    }
-
-    /**
-     * Categories filter item
-     * @param array $categories
-     * @return void
-     */
-    public function popup_filter_item( $categories )
-    {
-        include $this->plugin_directory . '/includes/popup_filter.php';
-    }
-
-    /**
-     * Main frame for the template kit
-     * popup
-     * @return void
-     */
-    public function popup()
-    {
-        include $this->plugin_directory . '/includes/popup.php';
-    }
-
-    /**
      * Unauthorize message to display 
      * if site is not subscribe to the 
      * cloud server
@@ -1131,7 +808,7 @@ class Growth_Optimizer_Template_Kit extends Source_Local {
     public function unauthorize( $domain )
     {
         $admin_page = admin_url(GROWTH_OPTIMIZER_ADMIN_PAGE);
-        include $this->plugin_directory . '/includes/unauthorize.php';
+        include $this->plugin_directory . '/parts/editor_unauthorize.php';
     }
 
     /**
@@ -1140,103 +817,9 @@ class Growth_Optimizer_Template_Kit extends Source_Local {
      * @param mixed $response
      * @return bool
      */
-    private function is_not_authorize( $response )
+    public function is_not_authorize( $response )
     {
         return is_array($response) && array_key_exists('code', $response) && $response['code'] == 401;
-    }
-
-    /**
-     * Popup filters
-     * @return void
-     */
-    public function popup_filters()
-    {
-        $categories          = ['' => 'Category'];
-        $template_categories = $this->get_template_categories();
-
-        if ($this->is_not_authorize( $template_categories )) {
-            // Do nothing
-        } else {
-            $terms = !empty($template_categories) ? $template_categories : [];
-            foreach($terms as $term) {
-                $categories[$term['term_id']] = $term['name'];
-            }            
-            do_action('kit-filter-item', $categories);
-        }        
-    }
-
-    /**
-     * Load templates
-     * @param array $templates
-     * @return void
-     */
-    public function load_templates( $templates, $category, $keyword )
-    {   
-        foreach( $templates as $index => $template ) {
-            if ($template['title'] == 'Default Kit')
-                continue;
-            do_action('growth_optimizer-template-item', $index, $template, $category, $keyword);
-        }                
-    }
-
-    /**
-     * Load template kit libraries inside
-     * elementor editor footer
-     * @return void
-     */
-    public function elementor_footer()
-    {
-        wp_enqueue_style( 
-            'growth-optimizer-template-kit-css', 
-            $this->plugin_url . 'assets/css/editor.css', 
-            array(), 
-            uniqid(), 
-            'all' 
-        );
-
-        wp_enqueue_script( 
-            'growth-optimizer-template-kit-script', 
-            $this->plugin_url . 'assets/js/editor-script.js', 
-            array( 'jquery', 'masonry', 'imagesloaded' ), 
-            uniqid(), 
-            true
-        );   
-
-        wp_localize_script( 'growth-optimizer-template-kit-script', 'growth_optimizer', array(
-            'ajaxurl'     => esc_url( admin_url( 'admin-ajax.php' ) ),
-            'button_icon' => $this->plugin_url . 'assets/img/logo-icon.svg',
-            'post_id'     => isset($_GET['post']) ? $_GET['post'] : 0        
-        ) );
-
-        do_action('growth_optimizer-template-popup');
-    }
-
-
-    /**
-     * Admin scripts
-     * @return void
-     */
-    public function admin_scripts() {
-
-        wp_enqueue_style( 
-            'growth-optimizer-admin-css', 
-            $this->plugin_url . 'assets/css/admin.css', 
-            array(), 
-            uniqid(), 
-            'all' 
-        );
-
-        wp_register_script( 
-            'growth-optimizer-admin-script', 
-            $this->plugin_url . 'assets/js/admin.js', 
-            array( 'jquery' ), 
-            uniqid(), 
-            true
-        );   
-        wp_localize_script( 'growth-optimizer-admin-script', 'growth_optimizer', array(
-            'ajaxurl'   => esc_url( admin_url( 'admin-ajax.php' ) ),
-            'asset_url' => $this->plugin_url
-        ) );
     }
 
 
@@ -1244,7 +827,7 @@ class Growth_Optimizer_Template_Kit extends Source_Local {
      * Get authorization access
      * @return array{referrer: mixed, token: string}
      */
-    private function get_authorization()
+    public function get_authorization()
     {
         return [
             'referrer' => $this->get_domain(),
@@ -1258,7 +841,7 @@ class Growth_Optimizer_Template_Kit extends Source_Local {
      * Request available templates
      * from the cloud server
      */
-    private function get_templates()
+    public function get_templates()
     {
         return $this->cloud_server('template-kit');
     }
@@ -1268,30 +851,15 @@ class Growth_Optimizer_Template_Kit extends Source_Local {
      * Request template categories
      * from the cloud server
      */
-    private function get_template_categories()
+    public function get_template_categories()
     {
         return $this->cloud_server('template-categories');
-    }
-
-    /**
-     * Admin head custom css
-     * @return void
-     */
-    public function admin_head_css()
-    {
-        ?>
-        <style>
-            #toplevel_page_go-starter-kit .wp-first-item {
-                display: none!important;
-            }
-        </style>
-        <?php
     }
 
 }
 
 # Start the template kit
-new Growth_Optimizer_Template_Kit(
+$go_starter_template_kit = new Growth_Optimizer_Template_Kit(
     GROWTH_OPTIMIZER_TITLE,
     GROWTH_OPTIMIZER_SLUG,
     GROWTH_OPTIMIZER_CLOUD_API,
@@ -1301,6 +869,14 @@ new Growth_Optimizer_Template_Kit(
     GROWTH_OPTIMIZER_GLOBAL_SETTINGS_OPTION_KEY,
     GROWTH_OPTIMIZER_PLUGIN_INSTALLED_KEY
 );
+# Start the system
+$go_starter_template_kit->start();
+
+# Start admin
+new GO_Admin($go_starter_template_kit);
+
+# Start elementor editor
+new GO_Editor($go_starter_template_kit);
 
 # Import global settings on activate plugin
 add_action( 'activated_plugin', function($plugin) {

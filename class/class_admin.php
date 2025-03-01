@@ -1,0 +1,290 @@
+<?php
+
+namespace Elementor\TemplateLibrary;
+
+# Admin class
+class GO_Admin
+{
+    public $parent;
+
+    /**
+     * Start
+     */
+    function __construct($parent)
+    {   
+        # Access parent data
+        $this->parent = $parent;        
+        
+        # Add admin menu
+        add_action( 
+            'admin_menu', 
+            [$this, 'admin_menu'], 
+            99 
+        );
+
+        # Admin scripts
+        add_action(
+            'admin_enqueue_scripts',
+            [$this, 'admin_scripts']
+        );
+
+        # Admin parts
+        add_action('admin-part-api', [$this, 'admin_part_api'], 10, 2);
+        add_action('admin-part-global-settings', [$this, 'admin_part_global_settings']);
+        add_action('admin-part-plugins', [$this, 'admin_part_plugins']);
+        add_action('admin-part-loop-items', [$this, 'admin_part_loop_items']);
+        add_action('admin-part-acf', [$this, 'admin_part_acf']);
+        add_action('admin-part-gforms', [$this, 'admin_part_gforms']);
+        add_action('go-lottie', [$this, 'lottie']);
+
+        # Add custom CSS in admin page
+        add_action('admin_head', [$this, 'admin_head_css']);
+    }
+
+
+    /**
+     * Admin menu
+     * @return void
+     */
+    public function admin_menu()
+    {
+        # Add custom admin management
+        add_menu_page(
+            __( $this->parent->plugin_title, 'go-kit' ),
+            __( $this->parent->plugin_title, 'go-kit' ),
+            'manage_options',
+            $this->parent->slug,
+            [$this, 'admin_page'],
+            $this->parent->plugin_url . 'assets/img/logo-icon-white.svg',
+            4
+        );        
+        add_submenu_page(
+            $this->parent->slug,
+            __( 'API', 'go-kit' ),
+            __( 'API', 'go-kit' ),
+            'manage_options',
+            $this->parent->slug.'-api',
+            [$this, 'admin_page']
+        );
+        add_submenu_page(
+            $this->parent->slug,
+            __( 'Global Settings', 'go-kit' ),
+            __( 'Global Settings', 'go-kit' ),
+            'manage_options',
+            $this->parent->slug.'-global-settings',
+            [$this, 'admin_page']
+        );
+        add_submenu_page(
+            $this->parent->slug,
+            __( 'Plugins', 'go-kit' ),
+            __( 'Plugins', 'go-kit' ),
+            'manage_options',
+            $this->parent->slug.'-plugins',
+            [$this, 'admin_page']
+        );
+        add_submenu_page(
+            $this->parent->slug,
+            __( 'Loop Items', 'go-kit' ),
+            __( 'Loop Items', 'go-kit' ),
+            'manage_options',
+            $this->parent->slug.'-loop-items',
+            [$this, 'admin_page']
+        );
+        add_submenu_page(
+            $this->parent->slug,
+            __( 'Gravity Forms', 'go-kit' ),
+            __( 'Gravity Forms', 'go-kit' ),
+            'manage_options',
+            $this->parent->slug.'-gforms',
+            [$this, 'admin_page']
+        );
+        add_submenu_page(
+            $this->parent->slug,
+            __( 'ACF', 'go-kit' ),
+            __( 'ACF', 'go-kit' ),
+            'manage_options',
+            $this->parent->slug.'-acf',
+            [$this, 'admin_page']
+        );
+    }
+
+
+    /**
+     * Admin scripts
+     * @return void
+     */
+    public function admin_scripts() 
+    {
+
+        wp_enqueue_style( 
+            'growth-optimizer-admin-css', 
+            $this->parent->plugin_url . 'assets/css/admin.css', 
+            array(), 
+            uniqid(), 
+            'all' 
+        );
+
+        wp_register_script( 
+            'growth-optimizer-admin-script', 
+            $this->parent->plugin_url . 'assets/js/admin.js', 
+            array( 'jquery' ), 
+            uniqid(), 
+            true
+        );   
+        wp_localize_script( 'growth-optimizer-admin-script', 'growth_optimizer', array(
+            'ajaxurl'   => esc_url( admin_url( 'admin-ajax.php' ) ),
+            'asset_url' => $this->parent->plugin_url
+        ) );
+    }
+
+
+    /**
+     * Admin part api field
+     * @param mixed $api_token
+     * @param boolean $is_active
+     * @return void
+     */
+    public function admin_part_api( $api_token, $is_active )
+    {
+        include $this->parent->plugin_directory . '/parts/admin_part-api.php';
+    }
+
+
+    /**
+     * Admin part global settings
+     * 
+     * @return void
+     */
+    public function admin_part_global_settings()
+    {        
+        $is_installed = get_option($this->parent->global_settings_option_key, '') == 'installed';
+        include $this->parent->plugin_directory . '/parts/admin_part-global-settings.php';
+    }
+
+
+    /**
+     * Admin part plugins
+     * 
+     * @return void
+     */
+    public function admin_part_plugins()
+    {   
+        
+        $plugins = $this->parent->cloud_server('required-plugins');
+
+        if ($this->parent->is_not_authorize( $plugins )) return;
+
+        if ( ! function_exists( 'get_plugins' ) ) {
+            require_once ABSPATH . 'wp-admin/includes/plugin.php';
+        }        
+        $installed_plugins = get_plugins();
+
+        include $this->parent->plugin_directory . '/parts/admin_part-plugins.php';
+    }
+
+
+    /**
+     * Admin part loop items
+     * 
+     * @return void
+     */
+    public function admin_part_loop_items()
+    {
+        $imported   = [];
+        $loop_items = $this->parent->cloud_server('loop-items');
+
+        if ($this->parent->is_not_authorize( $loop_items )) return;
+
+        # Check loop items if installed
+        foreach ($loop_items as $item) {            
+            $found_post_id = $this->parent->is_slug_exists( $item['slug'] );
+            if ($found_post_id) {
+                $imported[$item['ID']] = $found_post_id;
+            }                              
+        }
+        include $this->parent->plugin_directory . '/parts/admin_part-loop-items.php';
+    }
+
+
+    /**
+     * Part ACF
+     * @return void
+     */
+    public function admin_part_acf()
+    {
+        $imported  = [];
+        $acf_items = $this->parent->cloud_server('acf');
+
+        if ($this->parent->is_not_authorize( $acf_items )) return;
+
+        # Check loop items if installed
+        foreach ($acf_items as $item) {            
+            if ($this->parent->is_slug_exists( $item['post_name'] )) {
+                $imported[] = $item['ID'];
+            }                              
+        }
+        include $this->parent->plugin_directory . '/parts/admin_part-acf.php';
+    }
+
+
+    /**
+     * Lottie
+     * @return void
+     */
+    public function lottie()
+    {
+        include $this->parent->plugin_directory . '/parts/admin_part_lottie.php';
+    }
+
+
+    /**
+     * Part Gravity Forms
+     * @return void
+     */
+    public function admin_part_gforms()
+    {
+        $imported  = [];
+        $gform_items = $this->parent->cloud_server('gforms');
+
+        if ($this->parent->is_not_authorize( $gform_items )) return;
+
+        # Check loop items if installed
+        foreach ($gform_items as $item) {            
+            if ($this->parent->is_form_exists( $item['title'] )) {
+                $imported[] = $item['form_id'];
+            }                              
+        }        
+        include $this->parent->plugin_directory . '/parts/admin_part-gforms.php';
+    }
+
+
+    /**
+     * Admin page
+     * @return void
+     */
+    public function admin_page()
+    {
+        wp_enqueue_script( 'growth-optimizer-admin-script' );
+        $tab = str_replace($this->parent->slug.'-', '', $_GET['page']);        
+        $is_active = $this->parent->is_active();  
+        $api_key_token = $this->parent->get_api_token();
+        include $this->parent->plugin_directory . '/parts/admin.php';
+    }
+
+
+    /**
+     * Admin head custom css
+     * @return void
+     */
+    public function admin_head_css()
+    {
+        ?>
+        <style>
+            #toplevel_page_go-starter-kit .wp-first-item {
+                display: none!important;
+            }
+        </style>
+        <?php
+    }
+
+}
