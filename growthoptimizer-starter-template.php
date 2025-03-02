@@ -34,21 +34,20 @@ define('GROWTH_OPTIMIZER_API_TOKEN_OPTION_KEY', 'go_api_token');
 define('GROWTH_OPTIMIZER_GLOBAL_SETTINGS_OPTION_KEY', 'go_global_settings');
 define('GROWTH_OPTIMIZER_PLUGIN_INSTALLED_KEY', 'go_plugin_installed');
 
-# Helper class
-require_once(GROWTH_OPTIMIZER_DIR . 'class/class_helper.php');
-# Admin class
-require_once(GROWTH_OPTIMIZER_DIR . 'class/class_admin.php');
-# Editor class
-require_once(GROWTH_OPTIMIZER_DIR . 'class/class_editor.php');
-# Elementor template data handler
-require_once(GROWTH_OPTIMIZER_DIR . 'class/class_elementor.php');
-# Toolkit
-require_once(GROWTH_OPTIMIZER_DIR . 'class/class_toolkit.php');
-
-
-
 # When plugin loaded, start the starter kit
 add_action('plugins_loaded', function() {
+
+    # Helper class
+    require_once(GROWTH_OPTIMIZER_DIR . 'class/class_helper.php');
+    # Admin class
+    require_once(GROWTH_OPTIMIZER_DIR . 'class/class_admin.php');
+    # Editor class
+    require_once(GROWTH_OPTIMIZER_DIR . 'class/class_editor.php');
+    # Elementor template data handler
+    require_once(GROWTH_OPTIMIZER_DIR . 'class/class_elementor.php');
+    # Toolkit
+    require_once(GROWTH_OPTIMIZER_DIR . 'class/class_toolkit.php');
+
     # Start the template kit
     $go_starter_template_kit = new GO_Template_Kit(
         GROWTH_OPTIMIZER_TITLE,
@@ -62,9 +61,6 @@ add_action('plugins_loaded', function() {
     );
     # Start the system
     $go_starter_template_kit->actions();   
-
-    # Start elementor editor
-    //new GO_Editor($go_starter_template_kit);
 });
 
 # Import global settings on activate plugin
