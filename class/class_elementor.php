@@ -1,7 +1,8 @@
 <?php
 
-namespace Elementor\TemplateLibrary;
+namespace GO_Toolkit;
 
+use Elementor\TemplateLibrary\Source_Local;
 use Elementor\Plugin;
 
 abstract class GO_Elementor extends Source_Local

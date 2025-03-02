@@ -1,22 +1,17 @@
 <?php
 
-namespace Elementor\TemplateLibrary;
+namespace GO_Toolkit;
 
 # Admin class
-class GO_Admin extends Go_Helper
+trait GO_Admin
 {
-    public $parent;
+    use Go_Helper;
 
     /**
      * Start
      */
-    function __construct($parent)
-    {   
-        # Access parent data
-        $this->parent = $parent; 
-        
-        # Helper
-        $this->helper($this->parent);
+    public function admin()
+    {          
         
         # Add admin menu
         add_action( 
@@ -53,60 +48,60 @@ class GO_Admin extends Go_Helper
     {
         # Add custom admin management
         add_menu_page(
-            __( $this->parent->plugin_title, 'go-kit' ),
-            __( $this->parent->plugin_title, 'go-kit' ),
+            __( $this->plugin_title, 'go-kit' ),
+            __( $this->plugin_title, 'go-kit' ),
             'manage_options',
-            $this->parent->slug,
+            $this->slug,
             [$this, 'admin_page'],
-            $this->parent->plugin_url . 'assets/img/logo-icon-white.svg',
+            $this->plugin_url . 'assets/img/logo-icon-white.svg',
             4
         );        
         add_submenu_page(
-            $this->parent->slug,
+            $this->slug,
             __( 'API', 'go-kit' ),
             __( 'API', 'go-kit' ),
             'manage_options',
-            $this->parent->slug.'-api',
+            $this->slug.'-api',
             [$this, 'admin_page']
         );
         add_submenu_page(
-            $this->parent->slug,
+            $this->slug,
             __( 'Global Settings', 'go-kit' ),
             __( 'Global Settings', 'go-kit' ),
             'manage_options',
-            $this->parent->slug.'-global-settings',
+            $this->slug.'-global-settings',
             [$this, 'admin_page']
         );
         add_submenu_page(
-            $this->parent->slug,
+            $this->slug,
             __( 'Plugins', 'go-kit' ),
             __( 'Plugins', 'go-kit' ),
             'manage_options',
-            $this->parent->slug.'-plugins',
+            $this->slug.'-plugins',
             [$this, 'admin_page']
         );
         add_submenu_page(
-            $this->parent->slug,
+            $this->slug,
             __( 'Loop Items', 'go-kit' ),
             __( 'Loop Items', 'go-kit' ),
             'manage_options',
-            $this->parent->slug.'-loop-items',
+            $this->slug.'-loop-items',
             [$this, 'admin_page']
         );
         add_submenu_page(
-            $this->parent->slug,
+            $this->slug,
             __( 'Gravity Forms', 'go-kit' ),
             __( 'Gravity Forms', 'go-kit' ),
             'manage_options',
-            $this->parent->slug.'-gforms',
+            $this->slug.'-gforms',
             [$this, 'admin_page']
         );
         add_submenu_page(
-            $this->parent->slug,
+            $this->slug,
             __( 'ACF', 'go-kit' ),
             __( 'ACF', 'go-kit' ),
             'manage_options',
-            $this->parent->slug.'-acf',
+            $this->slug.'-acf',
             [$this, 'admin_page']
         );
     }
@@ -136,7 +131,7 @@ class GO_Admin extends Go_Helper
         );   
         wp_localize_script( 'growth-optimizer-admin-script', 'growth_optimizer', array(
             'ajaxurl'   => esc_url( admin_url( 'admin-ajax.php' ) ),
-            'asset_url' => $this->parent->plugin_url
+            'asset_url' => $this->plugin_url
         ) );
     }
 
@@ -166,7 +161,7 @@ class GO_Admin extends Go_Helper
      */
     public function admin_part_global_settings()
     {        
-        $is_installed = get_option($this->parent->global_settings_option_key, '') == 'installed';
+        $is_installed = get_option($this->global_settings_option_key, '') == 'installed';
         $this->template(
             'admin_part-global-settings',
             [
@@ -184,9 +179,9 @@ class GO_Admin extends Go_Helper
     public function admin_part_plugins()
     {   
         
-        $plugins = $this->parent->cloud_server('required-plugins');
+        $plugins = $this->cloud_server('required-plugins');
 
-        if ($this->parent->is_not_authorize( $plugins )) return;
+        if ($this->is_not_authorize( $plugins )) return;
 
         if ( ! function_exists( 'get_plugins' ) ) {
             require_once ABSPATH . 'wp-admin/includes/plugin.php';
@@ -211,13 +206,13 @@ class GO_Admin extends Go_Helper
     public function admin_part_loop_items()
     {
         $imported   = [];
-        $loop_items = $this->parent->cloud_server('loop-items');
+        $loop_items = $this->cloud_server('loop-items');
 
-        if ($this->parent->is_not_authorize( $loop_items )) return;
+        if ($this->is_not_authorize( $loop_items )) return;
 
         # Check loop items if installed
         foreach ($loop_items as $item) {            
-            $found_post_id = $this->parent->is_slug_exists( $item['slug'] );
+            $found_post_id = $this->is_slug_exists( $item['slug'] );
             if ($found_post_id) {
                 $imported[$item['ID']] = $found_post_id;
             }                              
@@ -241,13 +236,13 @@ class GO_Admin extends Go_Helper
     public function admin_part_acf()
     {
         $imported  = [];
-        $acf_items = $this->parent->cloud_server('acf');
+        $acf_items = $this->cloud_server('acf');
 
-        if ($this->parent->is_not_authorize( $acf_items )) return;
+        if ($this->is_not_authorize( $acf_items )) return;
 
         # Check loop items if installed
         foreach ($acf_items as $item) {            
-            if ($this->parent->is_slug_exists( $item['post_name'] )) {
+            if ($this->is_slug_exists( $item['post_name'] )) {
                 $imported[] = $item['ID'];
             }                              
         }
@@ -280,13 +275,13 @@ class GO_Admin extends Go_Helper
     public function admin_part_gforms()
     {
         $imported  = [];
-        $gform_items = $this->parent->cloud_server('gforms');
+        $gform_items = $this->cloud_server('gforms');
 
-        if ($this->parent->is_not_authorize( $gform_items )) return;
+        if ($this->is_not_authorize( $gform_items )) return;
 
         # Check loop items if installed
         foreach ($gform_items as $item) {            
-            if ($this->parent->is_form_exists( $item['title'] )) {
+            if ($this->is_form_exists( $item['title'] )) {
                 $imported[] = $item['form_id'];
             }                              
         }        
@@ -309,9 +304,9 @@ class GO_Admin extends Go_Helper
     public function admin_page()
     {
         wp_enqueue_script( 'growth-optimizer-admin-script' );
-        $tab = str_replace($this->parent->slug.'-', '', $_GET['page']);        
-        $is_active = $this->parent->is_active();  
-        $api_key_token = $this->parent->get_api_token();
+        $tab = str_replace($this->slug.'-', '', $_GET['page']);        
+        $is_active = $this->is_active();  
+        $api_key_token = $this->get_api_token();
 
         $this->template(
             'admin',

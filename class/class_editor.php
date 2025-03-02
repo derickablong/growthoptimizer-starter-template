@@ -1,20 +1,13 @@
 <?php
 
-namespace Elementor\TemplateLibrary;
+namespace GO_Toolkit;
 
-class GO_Editor extends Go_Helper
+trait GO_Editor
 {
+    use Go_Helper;
 
-    # Parent variable holder
-    public $parent;
-
-    function __construct($parent)
-    {
-        # Assign parent variable
-        $this->parent = $parent;
-
-        # Helper
-        $this->helper($this->parent);
+    public function editor()
+    {        
 
         # Register actions
         # Register elementor footer scripts
@@ -135,9 +128,9 @@ class GO_Editor extends Go_Helper
     public function popup_filters()
     {
         $categories          = ['' => 'Category'];
-        $template_categories = $this->parent->get_template_categories();
+        $template_categories = $this->get_template_categories();
 
-        if ($this->parent->is_not_authorize( $template_categories )) {
+        if ($this->is_not_authorize( $template_categories )) {
             // Do nothing
         } else {
             $terms = !empty($template_categories) ? $template_categories : [];
@@ -220,7 +213,7 @@ class GO_Editor extends Go_Helper
 
         wp_localize_script( 'growth-optimizer-template-kit-script', 'growth_optimizer', array(
             'ajaxurl'     => esc_url( admin_url( 'admin-ajax.php' ) ),
-            'button_icon' => $this->parent->plugin_url . 'assets/img/logo-icon.svg',
+            'button_icon' => $this->plugin_url . 'assets/img/logo-icon.svg',
             'post_id'     => isset($_GET['post']) ? $_GET['post'] : 0        
         ) );
 

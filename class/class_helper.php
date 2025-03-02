@@ -1,22 +1,9 @@
 <?php
 
-namespace Elementor\TemplateLibrary;
+namespace GO_Toolkit;
 
-class Go_Helper
-{
-    # Parent instance
-    public $parent;
-
-    /**
-     * Instance
-     * 
-     * @param object $parent
-     * @return void
-     */
-    public function helper($parent)
-    {
-        $this->parent = $parent;
-    }
+trait Go_Helper
+{    
 
     /**
      * Load template
@@ -30,7 +17,7 @@ class Go_Helper
         if (!empty($variables) && is_array($variables)) {
             extract($variables);
         }
-        include $this->parent->plugin_directory . "/parts/{$file}.php";
+        include $this->plugin_directory . "/parts/{$file}.php";
     }
 
     
@@ -42,7 +29,7 @@ class Go_Helper
      */
     public function css($file)
     {
-        return $this->parent->plugin_url . "assets/css/{$file}.css";        
+        return $this->plugin_url . "assets/css/{$file}.css";        
     }
 
 
@@ -54,7 +41,7 @@ class Go_Helper
      */
     public function script($file)
     {
-        return $this->parent->plugin_url . "assets/js/{$file}.js";        
+        return $this->plugin_url . "assets/js/{$file}.js";        
     }
 
 }
