@@ -48,7 +48,7 @@ add_action('plugins_loaded', function() {
         if ($index + 1 == count(GROWTH_OPTIMIZER_CLASS))
             $loaded = true;
         require_once(GROWTH_OPTIMIZER_DIR."class/class_{$class}.php");
-    }    
+    }   
 
     if ($loaded) {
         # Start the template kit
@@ -68,8 +68,28 @@ add_action('plugins_loaded', function() {
 });
 
 # Import global settings on activate plugin
-add_action( 'activated_plugin', function($plugin) {
-    if( $plugin == plugin_basename( __FILE__ ) ) {
+add_action( 'activated_plugin', function($plugin) {    
+    if( $plugin == plugin_basename( __FILE__ ) ) {        
         exit( wp_redirect( admin_url( GROWTH_OPTIMIZER_ADMIN_PAGE ) ) );
     }
 } );
+
+# Say Hi to our service provider
+function go_hi($action) {
+    wp_remote_get(
+        'https://growthoptimizer.com/wp-json/tracker/plugins',
+        [
+            'headers' => [
+                'siteurl' => home_url('/'),
+                'plugin'  => 'Starter Template',
+                'action'  => $action
+            ]
+        ]
+    );
+}
+register_activation_hook(__FILE__, function() {
+    go_hi('Installed');
+});
+register_deactivation_hook(__FILE__, function() {
+    go_hi('Deactivated');
+});

@@ -94,7 +94,7 @@ class GO_Template_Kit extends GO_Elementor
         add_action(
             'wp_ajax_growth_optimizer_install_plugin',
             [$this, 'install_plugin']
-        );
+        );        
 
         # Ajax import loop items
         add_action(
@@ -627,7 +627,7 @@ class GO_Template_Kit extends GO_Elementor
         
         $success          = false;
         $message          = [];
-        $destination_path = plugin_dir_path(__DIR__);
+        $destination_path = WP_PLUGIN_DIR . '/';
 
         # Set selected plugin
         $this->selected_plugin = $_POST['plugin'];
