@@ -390,10 +390,10 @@ class GO_Template_Kit extends GO_Elementor
             do_action( 'activated_plugin', $plugin );
 
             # Let's activate the license data
-            $this->apply_activation_keys(
-                $this->selected_plugin,
-                $license_key
-            );
+            // $this->apply_activation_keys(
+            //     $this->selected_plugin,
+            //     $license_key
+            // );
         }
 
         return null;        
