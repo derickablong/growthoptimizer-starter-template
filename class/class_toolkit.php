@@ -182,6 +182,16 @@ class GO_Template_Kit extends GO_Elementor
                     'installed',
                     true
                 );
+                update_option(
+                    'elementor_disable_color_schemes',
+                    'yes',
+                    true
+                );
+                update_option(
+                    'elementor_disable_typography_schemes',
+                    'yes',
+                    true
+                );
 
                 $success = true;   
                 
